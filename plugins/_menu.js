@@ -42,9 +42,11 @@ command(
         desc: "alive",
         type: "user"
     }, async (message) => {
-        await message.sendMessage(message.jid, { text: `ʜᴏᴛᴀʀᴏ-ᴍᴅ  is active.\nUptime: *_${runtime(process.uptime())}_*` })
+        await message.reply(`ʜᴏᴛᴀʀᴏ-ᴍᴅ  is active.\nUptime: *_${runtime(process.uptime())}_*`)
     }
 );
+
+
 command(
   {
     pattern: "list",
@@ -114,9 +116,9 @@ command(
       fromMe: isPrivate,
       desc: "Finds music name using AI",
       type: 'tools'
-  }, async (message, match) => {
+  }, async (message, match, m) => {
       if (!message.reply_message?.audio) return await message.reply("_Reply to a short song")
-      var audio = await message.reply_message.download('buffer');
+      var audio = await m.quoted.download('buffer');
       var data = await findMusic(audio)
       if (!data) return await message.reply("_No results found!_");
 var buttons = [];

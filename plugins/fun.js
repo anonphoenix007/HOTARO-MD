@@ -10,19 +10,6 @@
  WhatsApp : https://wa.me/2347080968564
 */                                                                                                                                                    
 
-cmd({ on: "body" }, async(Void, citel) => {
-     if (Config.autoreaction === 'true' && citel.text.startsWith(prefix)) {
-         const emojis = ['❤', '💕', '😻', '🧡', '💛', '💚', '💙', '💜', '🖤', '❣', '💞', '💓', '💗', '💖', '💘', '💝', '💟', '♥', '💌', '🙂', '🤗', '😌', '😉', '🤗', '😊', '🎊', '🎉', '🎁', '🎈', '👋']
-         const emokis = emojis[Math.floor(Math.random() * (emojis.length))]
-         Void.sendMessage(citel.chat, {
-             react: {
-                 text: emokis,
-                 key: citel.key
-             }
-         })
-     }
- })
-
 const { command, isPrivate, XKCDComic, getJson } = require("../lib");
 const axios = require("axios");
 

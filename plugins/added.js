@@ -1,7 +1,8 @@
 const googleTTS = require("google-tts-api");
-const { command, isPrivate, serialize } = require("../lib")
+const { command, isPrivate, serialize, parsedJid, getBuffer } = require("../lib")
 const axios = require("axios")
 const util = require("util")
+const fs = require("fs")
 
 
 command({ 
@@ -9,16 +10,11 @@ command({
         fromMe: isPrivate, 
         desc: "text to speech.", 
         type: "media"
-  }, async(message, match) => { 
+  }, async(message, match, m, client) => { 
     if (!match) return message.reply('Please give me a Sentence to change into audio.')
             let texttts = match
             const ttsurl = googleTTS.getAudioUrl(texttts, { lang: "en", slow: false, host: "https://translate.google.com" });
-            return await message.sendMessage(message.jid, { audio: { url: ttsurl
-            },
-                mimetype: "audio/mpeg", fileName: `hotarotts.m4a`,
-            }, {
-                quoted: message,
-            })
+            return await message.client.sendMessage(message.jid, { audio: { url: ttsurl }, mimetype: "audio/mpeg", fileName: `hotarotts.m4a`}, { quoted: message })
             await fs.unlinkSync("./hotarotts.m4a");
         }
     );
@@ -29,9 +25,14 @@ command({
             desc: "Makes wa.me of quoted or mentioned user.",
             type: "tools"
     }, async(message, match) => { 
-    let users = match || message.reply_message.jid
-    const jid = parsedJid(match);
-    return message.reply(`https://wa.me/${jid[0].split("@")[0]}`)
+    //let users = match || message.reply_message.jid
+    if (match) {
+      let emp = match.replace(/[^0-9]/g, "")
+      await message.reply(`Here you go\n\thttps://wa.me/${emp}`)
+    } else {
+    let jid = message.reply_message.jid.split("@")[0]
+    return message.reply(`https://wa.me/${jid}`)
+}
     });
 
 command({ 
@@ -41,35 +42,34 @@ command({
         type: "user",
     }, async(message, match, m, client) => { 
     let { data } = await axios.get('https://api.github.com/repos/Anonphoenix007/HOTARO-MD')
-    let cap = `*_ʜᴏᴛᴀʀᴏ-ᴍᴅ, a Simple WhatsApp Bot Created By Tᴀɪʀᴀ Mᴀᴋɪɴᴏ_*.
+    let cap = `*_ʜᴏᴛᴀʀᴏ-ᴍᴅ, Simple to use WhatsApp Bot_*.
   *_❲❒❳ Stars: ${data.stargazers_count} stars_*
   *_❲❒❳ Forks: *${data.forks_count} forks_*
   *_❲❒❳ Creator: https://t.me/Tha_Healer_*
-  *_❲❒❳ Group_: null
+  *_❲❒❳ Group_: null*
   *_❲❒❳ Channel: https://whatsapp.com/channel/0029Vag5l2ALSmbi14YryJ2r_*
   *_❲❒❳ Repo: https://github.com/anonphoenix007/HOTARO-MD_*
   *_❲❒❳ Scan: https://ttech-web-server.onrender.com_*
-  *_❲❒❳ Heroku: https://dashboard.heroku.com/new?template=https://github.com/Anonphoenix007/HOTARO-MD_*
-
-  *©Tᴀɪʀᴀ Mᴀᴋɪɴᴏ*`
-         let buttonMessaged = {
-         image: { url: "https://telegra.ph/file/0691935a017b74bc2e49b.jpg" },
-            caption: cap,
-            footer: "☬ ʜᴏᴛᴀʀᴏ-ᴍᴅ ☬",
-            headerType: 4,
-            contextInfo: {
-                externalAdReply: { title: "ʜᴏᴛᴀʀᴏ-ᴍᴅ repo",
-                body: "ʜᴏᴛᴀʀᴏ-ᴍᴅ", 
-                thumbnail: "https://telegra.ph/file/0691935a017b74bc2e49b.jpg", 
-                mediaType: 4,
-                mediaUrl: 'https://whatsapp.com/channel/0029Vag5l2ALSmbi14YryJ2r',
-                sourceUrl: `https://whatsapp.com/channel/0029Vag5l2ALSmbi14YryJ2r`,
-                },
-            },
-        };
-        return await message.client.sendMessage(message.jid, buttonMessaged, {
-            quoted: message,
-        });
+  *> ©Tᴀɪʀᴀ Mᴀᴋɪɴᴏ*`
+      
+  let buff = await getBuffer("https://telegra.ph/file/0691935a017b74bc2e49b.jpg");
+    await message.client.sendMessage(message.jid, {
+      'image': buff,
+      'mimetype': "image/jpeg",
+      'caption': cap,
+      'contextInfo': {
+        'externalAdReply': {
+          'title': "ʜᴏᴛᴀʀᴏ-ᴍᴅ",
+          'body': "Repo stat",
+          'sourceUrl': "",
+          'mediaUrl': "",
+          'mediaType': 3,
+          'showAdAttribution': true,
+          'renderLargerThumbnail': false,
+          'thumbnailUrl': "https://telegra.ph/file/0691935a017b74bc2e49b.jpg"
+        }
+      }
+    });
     }
 )
 

@@ -14,7 +14,7 @@
 const { command, isAdmin, parsedJid } = require("../lib");
 const { exec } = require("child_process");
 const { PausedChats, WarnDB } = require("../database");
-const { WARN_COUNT } = require("../config");
+const { WARN_COUNT, PRESENCE } = require("../config");
 const { secondsToDHMS } = require("../lib/functions");
 const { saveWarn, resetWarn } = WarnDB;
 const { isPrivate } = require("../lib");
@@ -54,7 +54,7 @@ async function generateProfilePicture(buffer) {
 
 command(
   {
-    pattern: "fullpp$",
+    pattern: "fullpp",
     fromMe: true,
     desc: "Set full profile picture",
     type: "user",
@@ -68,21 +68,13 @@ command(
   }
 );
 
- global.PRESENCE =
-  process.env.PRESENCE && process.env.PRESENCE === "online"
-    ? "available"
-    : process.env.PRESENCE || "";
+
 command(
  { 
   on: "text" 
  }, async (message, match, m, client) => {
   try {
-    if (
-      ["unavailable", "available", "composing", "recording", "paused"].includes(
-        presence
-      )
-    )
-      message.client.sendPresenceUpdate(presence, message.jid);
+      message.client.sendPresenceUpdate(PRESENCE, message.jid);
   } catch (e) {
     console.log(e);
   }
@@ -117,14 +109,27 @@ command(
     desc: "Set profile picture",
     type: "user",
   },
-  async (message, match, m) => {
-    if (!message.reply_message.image)
-      return await message.reply("_Reply to a photo_");
+  async (message, match, m, client) => {
+    if (!message.reply_message.image) await message.reply("_Reply to a photo_");
     let buff = await m.quoted.download();
-    await message.setPP(message.user, buff);
+    await message.client.updateProfilePicture(message.client.user.id, buff);
     return await message.reply("_Profile Picture Updated_");
   }
 );
+
+command(
+  {
+    pattern: "rpp",
+    fromMe: true,
+    desc: "remove profile picture",
+    type: "user",
+  },
+  async (message, match, m, client) => {
+    await message.client.removeProfilePicture(message.client.user.id);
+    return await message.reply("_Profile Picture removed_");
+  }
+);
+
 
 command(
   {
@@ -133,9 +138,9 @@ command(
     desc: "Set User name",
     type: "user",
   },
-  async (message, match) => {
-    if (!match) return await message.reply("_Enter name_");
-    await message.updateName(match);
+  async (message, match, m, client) => {
+    if (!match) return await message.reply("_Enter a name_");
+    await message.client.updateProfileName(match);
     return await message.reply(`_Username Updated : ${match}_`);
   }
 );
@@ -147,16 +152,16 @@ command(
     desc: "Block a person",
     type: "user",
   },
-  async (message, match) => {
+  async (message, match, m, client) => {
     if (message.isGroup) {
       let jid = message.mention[0] || message.reply_message.jid;;
       if (!jid) return await message.reply("_Reply to a person or mention_");
-      await message.block(jid);
+      await message.client.updateBlockStatus(jid, 'block');
       return await message.sendMessage(`_@${jid.split("@")[0]} Blocked_`, {
         mentions: [jid],
       });
     } else {
-      await message.block(message.jid);
+      await message.client.updateBlockStatus(message.jid, 'block');
       return await message.reply("_User Successfully blocked_");
     }
   }
@@ -169,11 +174,11 @@ command(
     desc: "Unblock a person",
     type: "user",
   },
-  async (message, match) => {
+  async (message, match, m, client) => {
     if (message.isGroup) {
       let jid = message.mention[0] || message.reply_message.jid;
       if (!jid) return await message.reply("_Reply to a person or mention_");
-      await message.block(jid);
+      await message.client.updateBlockStatus(jid, 'unblock');
       return await message.sendMessage(
         message.jid,
         `_@${jid.split("@")[0]} Successfully unblocked_`,
@@ -182,7 +187,7 @@ command(
         }
       );
     } else {
-      await message.unblock(message.jid);
+      await message.client.updateBlockStatus(message.jid, 'unblock');
       return await message.reply("_User Successfully unblocked_");
     }
   }
@@ -212,7 +217,7 @@ command(
   },
   async (message, match, m, client) => {
     if (message.isGroup) {
-      client.sendMessage(message.jid, { delete: message.reply_message.key });
+      message.client.sendMessage(message.jid, { delete: message.reply_message.key });
     }
   }
 );

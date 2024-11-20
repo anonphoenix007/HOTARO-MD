@@ -25,8 +25,8 @@ command(
     type: "user",
   },
   async (message, match) => {
-    await message.sendMessage(message.jid, { text: "```*ʜᴏᴛᴀʀᴏ-ᴍᴅ* \n\t  Ping!```" });
-    await message.sendMessage(message.jid, { text: `*_ʟᴀᴛᴇɴᴄʏ: ${latency} ms_*` });
+    await message.reply("```*ʜᴏᴛᴀʀᴏ-ᴍᴅ* \n\t  Ping!```");
+    await message.reply(`*_ʟᴀᴛᴇɴᴄʏ: ${latency} ms_*`);
   }
 );
 
