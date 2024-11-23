@@ -1,26 +1,25 @@
-const axios = require('axios')
- const { getJson,command, GIFBufferToVideoBuffer} = require('../lib')
- const { isPrivate, serialize } = require("../lib");
-            //---------------------------------------------------------------------------
-        command({
-                    pattern: "bite",
-                    fromMe: isPrivate,
-                    type: "reaction"
-                },
-                async(message, match, m, client) => {
-                    var bite = await getJson(`https://api.waifu.pics/sfw/bite`);
-                    const response = await axios.get(bite.url, {
-                        responseType: "arraybuffer",
-                    });
-                    const buffer = Buffer.from(response.data, "utf-8");
-                    let users = match || message.reply_message.jid;
-                    let gif = await GIFBufferToVideoBuffer(buffer);
-                    if (users) {
-                        let cap = `@${message.sender.split("@")[0]} bitten to @${users.split("@")[0]} `;
-                        message.sendMessage(message.jid, { video: gif, gifPlayback: true, mentions: [users, message.sender], caption: cap }, { quoted: message });
-                    } else {
-                        let cap = `@${message.sender.split("@")[0]} bitten to everyone. `;
-                        message.client.sendMessage(message.jid, { video: gif, gifPlayback: true, mentions: [message.sender], caption: cap }, { quoted: message });
-                    }
-                }
-            )
+command(
+  {
+    pattern: "ss ?(.*)",
+    fromMe: true,
+    desc: "Screenshots a site",
+    type: "misc",
+  },
+  async (message, match) => {
+    if (!match) {
+      return await message.sendMessage("*Please provide a URL to screenshot.*");
+    }
+
+    const screenshotUrl = `https://api.giftedtech.my.id/api/tools/vurl?apikey=gifted&url=${encodeURIComponent(match)}`;
+
+    await message.client.sendMessage(
+      message.jid,
+      {
+        image: { url: screenshotUrl },
+        mimetype: "image/jpeg",
+        caption: `\n> screenshot of ${(match)} generated successfully `,
+      },
+      { quoted: message }
+    );
+  }
+);
