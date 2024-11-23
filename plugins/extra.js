@@ -1,4 +1,4 @@
-command(
+/*command(
   {
     pattern: "ss ?(.*)",
     fromMe: true,
@@ -23,3 +23,4 @@ command(
     );
   }
 );
+*/
